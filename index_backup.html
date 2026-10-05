@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PlacePilot — Assess. Improve. Get Placement Ready.</title>
+<style>
+  :root{
+    --bg:#f6f7fb;
+    --panel:#ffffff;
+    --panel-soft:#f0f2fb;
+    --text:#171b2d;
+    --muted:#6b7084;
+    --line:#e5e7f0;
+    --primary:#3325f5;
+    --primary-2:#574df7;
+    --primary-soft:#e8e7ff;
+    --success:#19b87a;
+    --success-soft:#e5faf1;
+    --warning:#e5a21a;
+    --warning-soft:#fff7df;
+    --danger:#ef3e48;
+    --danger-soft:#fff0f1;
+    --shadow:0 10px 30px rgba(25,28,55,.07);
+    --radius:18px;
+    --radius-sm:12px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+  body{min-height:100vh}
+  button,input,select,textarea{font:inherit}
+  button{cursor:pointer}
+  .app{display:flex;min-height:100vh}
+  .sidebar{width:250px;background:#fff;border-right:1px solid var(--line);padding:18px 14px;position:fixed;inset:0 auto 0 0;overflow:auto;z-index:20}
+  .brand{display:flex;align-items:center;gap:10px;padding:6px 10px 22px}
+  .logo{width:34px;height:34px;border-radius:11px;background:linear-gradient(145deg,var(--primary),#6a5dfb);color:#fff;display:grid;place-items:center;font-weight:800;box-shadow:0 8px 20px rgba(51,37,245,.22)}
+  .brand strong{font-size:18px;letter-spacing:-.4px}
+  .brand span{display:block;font-size:11px;color:var(--muted);margin-top:1px}
+  .nav-section{font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:#9aa0b4;padding:15px 11px 8px}
+  .nav-item{width:100%;border:0;background:transparent;text-align:left;padding:10px 12px;border-radius:11px;color:#555b70;display:flex;align-items:center;gap:11px;margin:2px 0;font-weight:600;font-size:13px}
+  .nav-item:hover{background:#f5f6fb}
+  .nav-item.active{background:var(--primary-soft);color:var(--primary)}
+  .nav-icon{width:18px;text-align:center}
+  .sidebar-profile{margin-top:18px;border-top:1px solid var(--line);padding:16px 8px 4px;display:flex;align-items:center;gap:10px}
+  .avatar{width:34px;height:34px;border-radius:50%;background:#dfe4ff;color:var(--primary);display:grid;place-items:center;font-weight:800;font-size:12px;flex:0 0 auto}
+  .avatar.large{width:54px;height:54px;font-size:16px}
+  .profile-mini strong{font-size:12px;display:block}
+  .profile-mini span{font-size:11px;color:var(--muted)}
+  .main{margin-left:250px;flex:1;min-width:0}
+  .topbar{height:68px;background:rgba(255,255,255,.9);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:15}
+  .crumb{font-size:12px;color:var(--muted)}
+  .top-actions{display:flex;align-items:center;gap:10px}
+  .icon-btn{border:1px solid var(--line);width:38px;height:38px;border-radius:11px;background:#fff;color:#5c6273}
+  .pill{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.03em}
+  .pill.primary{background:var(--primary-soft);color:var(--primary)}
+  .pill.green{background:var(--success-soft);color:#087b52}
+  .pill.yellow{background:var(--warning-soft);color:#8b6400}
+  .pill.red{background:var(--danger-soft);color:#c5212d}
+  .content{padding:24px 28px 38px;max-width:1540px;margin:auto}
+  .view{display:none}
+  .view.active{display:block}
+  .grid{display:grid;gap:16px}
+  .grid-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .grid-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .grid-4{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px}
+  .card.tight{padding:14px}
+  .card.no-shadow{box-shadow:none}
+  .hero{padding:26px 28px;border-radius:22px;background:linear-gradient(135deg,#2420d9 0%,#4b31fa 52%,#6f63ff 100%);color:#fff;box-shadow:0 18px 38px rgba(51,37,245,.22);position:relative;overflow:hidden}
+  .hero:after{content:"";position:absolute;inset:auto -70px -90px auto;width:280px;height:280px;border-radius:50%;background:rgba(255,255,255,.10)}
+  .hero h1{font-size:29px;line-height:1.05;margin:0 0 8px;letter-spacing:-.9px;position:relative;z-index:1}
+  .hero p{max-width:680px;color:rgba(255,255,255,.82);font-size:13px;line-height:1.55;position:relative;z-index:1}
+  .section-title{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin:28px 0 12px}
+  .section-title h2{margin:0;font-size:17px;letter-spacing:-.35px}
+  .section-title p{margin:0;color:var(--muted);font-size:11px}
+  .metric{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+  .metric-label{font-size:11px;color:var(--muted)}
+  .metric-value{font-size:30px;line-height:1;font-weight:800;margin-top:7px;letter-spacing:-1px}
+  .metric-note{font-size:10px;margin-top:7px;color:var(--muted)}
+  .metric-note.green{color:#0a8b60}.metric-note.red{color:#cf2330}
+  .readiness-ring{width:104px;height:104px;border-radius:50%;background:conic-gradient(var(--primary) calc(var(--pct)*1%),#eaebf5 0);position:relative;display:grid;place-items:center}
+  .readiness-ring:after{content:"";position:absolute;inset:11px;border-radius:50%;background:#fff}
+  .readiness-ring span{position:relative;z-index:1;font-weight:800;font-size:24px}
+  .skill-row{display:grid;grid-template-columns:160px 1fr 70px 72px;gap:10px;align-items:center;padding:11px 0;border-bottom:1px solid var(--line)}
+  .skill-row:last-child{border-bottom:0}
+  .skill-name{font-weight:700;font-size:12px}
+  .skill-sub{font-size:10px;color:var(--muted);margin-top:2px}
+  .bar{height:8px;background:#eceef5;border-radius:99px;overflow:hidden}
+  .bar>span{height:100%;display:block;border-radius:99px}
+  .bar .blue{background:var(--primary)} .bar .green{background:var(--success)} .bar .red{background:var(--danger)} .bar .orange{background:var(--warning)}
+  .score{font-weight:800;font-size:12px;text-align:right}
+  .delta{font-size:10px;font-weight:800;text-align:right}
+  .delta.good{color:#08865b}.delta.bad{color:#d02531}.delta.neutral{color:#726e14}
+  .btn{border:0;border-radius:11px;padding:10px 14px;font-size:12px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+  .btn.primary{background:var(--primary);color:#fff;box-shadow:0 7px 16px rgba(51,37,245,.18)}
+  .btn.primary:hover{background:#281be1}
+  .btn.secondary{background:#fff;border:1px solid var(--line);color:#495064}
+  .btn.soft{background:var(--primary-soft);color:var(--primary)}
+  .btn.danger{background:var(--danger);color:#fff}
+  .btn.block{width:100%}
+  .actions{display:flex;gap:10px;flex-wrap:wrap}
+  .muted{color:var(--muted)}
+  .tiny{font-size:10px}.small{font-size:11px}.body{font-size:13px;line-height:1.6}
+  .divider{height:1px;background:var(--line);margin:14px 0}
+  .tag-row{display:flex;gap:7px;flex-wrap:wrap}
+  .tag{display:inline-flex;padding:5px 9px;border-radius:8px;background:#f1f2f8;color:#5c6174;font-size:10px;font-weight:700}
+  .progress-list>div{margin:14px 0}
+  .progress-head{display:flex;justify-content:space-between;gap:10px;font-size:11px;margin-bottom:6px}
+  .priority-card{display:grid;grid-template-columns:1.3fr .7fr;gap:16px}
+  .priority-box{padding:16px;border:1px solid #dddfff;border-radius:15px;background:linear-gradient(180deg,#f9f9ff,#f2f1ff)}
+  .priority-box h3{margin:8px 0 5px;font-size:20px}
+  .priority-box p{font-size:11px;color:#5f6375;line-height:1.55}
+  .why-list{display:grid;gap:9px}
+  .why{display:grid;grid-template-columns:28px 1fr;gap:8px;align-items:start;padding:9px;border-radius:11px;background:#fff;border:1px solid var(--line)}
+  .why b{font-size:11px}.why span{font-size:10px;color:var(--muted)}
+  .icon-dot{width:28px;height:28px;border-radius:9px;background:var(--primary-soft);display:grid;place-items:center;color:var(--primary);font-size:13px}
+  .timeline{display:grid;gap:11px}
+  .timeline-item{display:grid;grid-template-columns:28px 1fr auto;gap:10px;align-items:center}
+  .time-dot{width:28px;height:28px;border-radius:50%;background:#edf0ff;color:var(--primary);display:grid;place-items:center;font-size:11px;font-weight:800}
+  .schedule-title{font-weight:700;font-size:12px}.schedule-sub{font-size:10px;color:var(--muted);margin-top:2px}
+  .chart{height:220px;position:relative;padding:20px 10px 10px}
+  .chart svg{width:100%;height:100%;overflow:visible}
+  .chart-legend{display:flex;gap:14px;font-size:10px;color:var(--muted)}
+  .legend-dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:4px}
+  .assessment-shell{max-width:1100px;margin:0 auto}
+  .question{padding:22px;border:1px solid var(--line);border-radius:18px;background:#fff}
+  .question-num{font-size:11px;color:var(--primary);font-weight:800;text-transform:uppercase}
+  .question h2{font-size:22px;line-height:1.25;margin:8px 0 18px;letter-spacing:-.5px}
+  .option{width:100%;padding:14px;text-align:left;border:1px solid var(--line);background:#fff;border-radius:13px;margin-top:10px;display:flex;align-items:center;gap:12px}
+  .option:hover{border-color:#c9c6ff;background:#fafaff}
+  .option.selected{border-color:var(--primary);box-shadow:0 0 0 2px #e4e1ff;background:#f8f7ff}
+  .option-letter{width:29px;height:29px;border-radius:9px;background:#f0f1f7;display:grid;place-items:center;font-weight:800;color:#626779}
+  .option.selected .option-letter{background:var(--primary);color:#fff}
+  .result-banner{padding:20px;border-radius:18px;background:linear-gradient(145deg,#2820df,#5a49f5);color:#fff}
+  .result-grid{display:grid;grid-template-columns:180px 1fr;gap:24px;align-items:center}
+  .center{display:grid;place-items:center}
+  .result-ring{width:150px;height:150px;border-radius:50%;background:conic-gradient(#fff 64%,rgba(255,255,255,.18) 0);display:grid;place-items:center;position:relative}
+  .result-ring:after{content:"";position:absolute;inset:14px;background:#382ae7;border-radius:50%}
+  .result-ring strong{position:relative;z-index:2;font-size:38px}
+  .result-label{text-align:center;margin-top:7px;font-size:11px;color:rgba(255,255,255,.76)}
+  .table{width:100%;border-collapse:collapse}
+  .table th,.table td{padding:11px;border-bottom:1px solid var(--line);font-size:11px;text-align:left}
+  .table th{color:var(--muted);font-weight:700}
+  .resource-card img{width:100%;height:120px;object-fit:cover;border-radius:12px;background:#e9ebf3}
+  .resource-card h3{margin:12px 0 4px;font-size:13px}
+  .resource-card p{margin:0;color:var(--muted);font-size:10px;line-height:1.45}
+  .input,.select,.textarea{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:11px;background:#fff;color:var(--text);outline:none}
+  .input:focus,.select:focus,.textarea:focus{border-color:#aaa5ff;box-shadow:0 0 0 3px #e9e7ff}
+  .label{font-size:10px;color:var(--muted);margin-bottom:5px;display:block;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+  .form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+  .form-grid .full{grid-column:1/-1}
+  .setting-row{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 0;border-bottom:1px solid var(--line)}
+  .setting-row:last-child{border-bottom:0}
+  .toggle{width:46px;height:26px;border-radius:99px;background:#dcdfea;position:relative;border:0;padding:0}
+  .toggle span{position:absolute;width:20px;height:20px;border-radius:50%;background:#fff;top:3px;left:3px;box-shadow:0 2px 6px rgba(0,0,0,.12);transition:.18s}
+  .toggle.on{background:var(--primary)} .toggle.on span{left:23px}
+  .job{display:grid;grid-template-columns:1fr auto;gap:14px;align-items:center;padding:15px 0;border-bottom:1px solid var(--line)}
+  .job:last-child{border-bottom:0}
+  .job h3{margin:0;font-size:13px}.job p{margin:4px 0;font-size:10px;color:var(--muted)}
+  .job-meta{display:flex;gap:8px;flex-wrap:wrap}
+  .resume-score{font-size:38px;font-weight:850}
+  .mobile-menu{display:none}
+  .toast{position:fixed;right:24px;bottom:24px;z-index:50;background:#1f2335;color:#fff;border-radius:12px;padding:12px 15px;font-size:11px;box-shadow:0 15px 35px rgba(0,0,0,.2);opacity:0;transform:translateY(10px);pointer-events:none;transition:.2s}
+  .toast.show{opacity:1;transform:none}
+  .footer-note{text-align:center;color:#9aa0b4;font-size:10px;padding:26px 0}
+  .hero-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+  .hero .btn.secondary{background:rgba(255,255,255,.15);color:#fff;border-color:rgba(255,255,255,.2)}
+  .check-list{display:grid;gap:9px}.check{display:flex;gap:9px;align-items:flex-start;font-size:11px}.check i{width:18px;height:18px;border-radius:6px;background:var(--success-soft);color:#0c8c60;display:grid;place-items:center;font-style:normal;font-size:11px;flex:0 0 auto}
+  .empty{padding:38px;text-align:center;color:var(--muted)}
+  @media(max-width:1050px){
+    .sidebar{width:220px}.main{margin-left:220px}
+    .grid-4{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .priority-card{grid-template-columns:1fr}
+  }
+  @media(max-width:780px){
+    .sidebar{transform:translateX(-100%);transition:.2s}.sidebar.open{transform:none}
+    .main{margin-left:0}
+    .mobile-menu{display:inline-grid}
+    .topbar{padding:0 14px}.content{padding:16px}
+    .grid-2,.grid-3,.grid-4,.form-grid{grid-template-columns:1fr}
+    .skill-row{grid-template-columns:1fr auto}
+    .skill-row .bar{grid-column:1/-1}
+    .result-grid{grid-template-columns:1fr}
+    .hero h1{font-size:24px}
+  }
+
+  .public-shell{min-height:100vh;background:radial-gradient(circle at 85% 10%,#ebe9ff 0,#f6f7fb 38%,#f6f7fb 75%);display:flex;align-items:stretch}
+  .public-left{flex:1;padding:64px 7vw 52px;display:flex;flex-direction:column;justify-content:center;min-width:0}
+  .public-brand{display:flex;align-items:center;gap:10px;margin-bottom:55px}
+  .public-brand .logo{width:42px;height:42px}
+  .public-brand strong{font-size:22px}.public-brand span{display:block;font-size:11px;color:var(--muted)}
+  .public-copy{max-width:720px}.public-copy .eyebrow{display:inline-flex;padding:6px 10px;border-radius:999px;background:var(--primary-soft);color:var(--primary);font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.07em}
+  .public-copy h1{font-size:54px;line-height:1.02;letter-spacing:-2.3px;margin:17px 0 14px;max-width:720px}
+  .public-copy h1 span{color:var(--primary)}
+  .public-copy p{font-size:15px;line-height:1.65;color:var(--muted);max-width:640px}
+  .public-points{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:30px;max-width:740px}
+  .public-point{background:#fff;border:1px solid var(--line);border-radius:15px;padding:14px;box-shadow:var(--shadow)}
+  .public-point b{font-size:12px;display:block;margin-bottom:5px}.public-point span{font-size:10px;line-height:1.45;color:var(--muted)}
+  .public-right{width:460px;padding:34px 6vw 34px 28px;display:grid;place-items:center}
+  .auth-card{width:100%;max-width:420px;background:#fff;border:1px solid var(--line);border-radius:22px;box-shadow:0 20px 55px rgba(25,28,55,.12);padding:26px}
+  .auth-tabs{display:flex;background:#f3f4f8;border-radius:12px;padding:4px;margin-bottom:22px}.auth-tab{flex:1;border:0;background:transparent;padding:10px;border-radius:9px;font-weight:800;font-size:11px;color:#74798a}.auth-tab.active{background:#fff;color:var(--primary);box-shadow:0 3px 10px rgba(20,24,50,.07)}
+  .auth-pane{display:none}.auth-pane.active{display:block}.auth-card h2{font-size:24px;margin:0 0 7px;letter-spacing:-.6px}.auth-card .subtitle{font-size:11px;color:var(--muted);line-height:1.55;margin-bottom:20px}
+  .auth-form{display:grid;gap:12px}.auth-error{display:none;padding:10px 11px;border-radius:10px;background:var(--danger-soft);color:#bc1d28;font-size:10px;font-weight:700}.auth-success{display:none;padding:10px 11px;border-radius:10px;background:var(--success-soft);color:#087b52;font-size:10px;font-weight:700}
+  .public-footer{margin-top:32px;color:#9aa0b4;font-size:10px}
+  .logout-small{margin-left:8px}
+  @media(max-width:900px){.public-shell{display:block}.public-left{padding:38px 24px 18px}.public-brand{margin-bottom:35px}.public-copy h1{font-size:42px}.public-points{grid-template-columns:1fr}.public-right{width:auto;padding:20px 24px 40px}.public-footer{margin-bottom:10px}}
+
+</style>
+</head>
+<body>
+
+<div class="public-shell" id="publicShell">
+  <section class="public-left">
+    <div class="public-brand">
+      <div class="logo">P</div>
+      <div><strong>PlacePilot</strong><span>Placement readiness platform</span></div>
+    </div>
+    <div class="public-copy">
+      <span class="eyebrow">Placement preparation, personalized</span>
+      <h1>Know where you stand.<br><span>Know what to do next.</span></h1>
+      <p>Assess your placement readiness, identify your highest-impact skill gaps, get a focused next best action, and follow a personalized preparation plan.</p>
+      <div class="public-points">
+        <div class="public-point"><b>Assess</b><span>Measure your current readiness across role-relevant skills.</span></div>
+        <div class="public-point"><b>Improve</b><span>Focus on the gaps that matter most for your target role.</span></div>
+        <div class="public-point"><b>Track</b><span>Practice, build consistency, and see your progress over time.</span></div>
+      </div>
+    </div>
+    <div class="public-footer">PlacePilot · Assess. Improve. Get Placement Ready.</div>
+  </section>
+  <section class="public-right">
+    <div class="auth-card">
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="loginTab" onclick="showAuthPane('login')">Login</button>
+        <button class="auth-tab" id="signupTab" onclick="showAuthPane('signup')">Create account</button>
+      </div>
+
+      <div class="auth-pane active" id="auth-login">
+        <h2>Welcome back</h2>
+        <div class="subtitle">Sign in to continue your placement preparation.</div>
+        <div class="auth-error" id="loginError"></div>
+        <form class="auth-form" onsubmit="loginUser(event)">
+          <div><label class="label">Email</label><input class="input" id="loginEmail" type="email" autocomplete="email" placeholder="you@example.com" required></div>
+          <div><label class="label">Password</label><input class="input" id="loginPassword" type="password" autocomplete="current-password" placeholder="••••••••" required></div>
+          <button class="btn primary block" type="submit">Login to PlacePilot →</button>
+        </form>
+        <div style="margin-top:14px;font-size:10px;color:var(--muted);text-align:center">Demo account: demo@placepilot.com · PlacePilot123</div>
+      </div>
+
+      <div class="auth-pane" id="auth-signup">
+        <h2>Create your account</h2>
+        <div class="subtitle">Start your personalized placement-readiness journey.</div>
+        <div class="auth-error" id="signupError"></div>
+        <div class="auth-success" id="signupSuccess"></div>
+        <form class="auth-form" onsubmit="registerUser(event)">
+          <div><label class="label">Full name</label><input class="input" id="signupName" autocomplete="name" placeholder="Your full name" required></div>
+          <div><label class="label">Email</label><input class="input" id="signupEmail" type="email" autocomplete="email" placeholder="you@example.com" required></div>
+          <div><label class="label">Password</label><input class="input" id="signupPassword" type="password" autocomplete="new-password" placeholder="At least 6 characters" minlength="6" required></div>
+          <button class="btn primary block" type="submit">Create account →</button>
+        </form>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div class="app" id="mainApp" style="display:none">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="logo">P</div>
+      <div><strong>PlacePilot</strong><span>Placement readiness platform</span></div>
+    </div>
+
+    <div class="nav-section">Core</div>
+    <button class="nav-item active" data-view="dashboard"><span class="nav-icon">▦</span>Dashboard</button>
+    <button class="nav-item" data-view="assessment"><span class="nav-icon">✓</span>Assessments</button>
+    <button class="nav-item" data-view="gaps"><span class="nav-icon">◈</span>Skill Gaps</button>
+    <button class="nav-item" data-view="learning"><span class="nav-icon">◇</span>Learning Plan</button>
+    <button class="nav-item" data-view="resources"><span class="nav-icon">▤</span>Resources</button>
+    <button class="nav-item" data-view="practice"><span class="nav-icon">⌁</span>Practice</button>
+    <button class="nav-item" data-view="progress"><span class="nav-icon">↗</span>Progress</button>
+
+    <div class="nav-section">Placement</div>
+    <button class="nav-item" data-view="projects"><span class="nav-icon">□</span>Projects</button>
+    <button class="nav-item" data-view="mock"><span class="nav-icon">◉</span>Mock Interview</button>
+    <button class="nav-item" data-view="roles"><span class="nav-icon">◎</span>Role Readiness</button>
+    <button class="nav-item" data-view="jobs"><span class="nav-icon">▣</span>Jobs & Hiring</button>
+    <button class="nav-item" data-view="resume"><span class="nav-icon">▥</span>Resume</button>
+
+    <div class="nav-section">Account</div>
+    <button class="nav-item" data-view="reports"><span class="nav-icon">▥</span>Reports</button>
+    <button class="nav-item" data-view="profile"><span class="nav-icon">◌</span>Profile</button>
+    <button class="nav-item" data-view="settings"><span class="nav-icon">⚙</span>Settings</button>
+
+    <div class="sidebar-profile">
+      <div class="avatar">VG</div>
+      <div class="profile-mini"><strong>Student</strong><span>Software Developer</span></div>
+    </div>
+
+    <button class="nav-item" onclick="logoutUser()" style="margin-top:8px;color:var(--danger);">
+      <span class="nav-icon">↪</span>Logout
+    </button>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div style="display:flex;align-items:center;gap:10px">
+        <button class="icon-btn mobile-menu" id="menuBtn">☰</button>
+        <div class="crumb" id="crumb">Dashboard / Overview</div>
+      </div>
+      <div class="top-actions">
+        <span class="pill green">● On track</span>
+        <button class="icon-btn" onclick="openView('reports')">◫</button>
+        <button class="icon-btn" onclick="showToast('No new critical notifications')">♢</button><button class="btn secondary logout-small" onclick="logoutUser()">Logout</button>
+      </div>
+    </header>
+
+    <section class="content">
+
+      <!-- DASHBOARD -->
+      <div class="view active" id="view-dashboard">
+        <div class="hero">
+          <span class="pill" style="background:rgba(255,255,255,.15);color:#fff">Student placement dashboard</span>
+          <h1 style="margin-top:10px">Know where you stand. Know what to do next.</h1>
+          <p>PlacePilot combines assessment, skill-gap analysis, learning recommendations, practice, and progress tracking into one placement preparation loop.</p>
+          <div class="hero-actions">
+            <button class="btn secondary" onclick="openView('assessment')">Take Assessment →</button>
+            <button class="btn secondary" onclick="openView('gaps')">View Skill Gaps</button>
+          </div>
+        </div>
+
+        <div class="section-title"><div><h2>Placement readiness overview</h2><p>Current diagnostic state for your Software Developer goal</p></div><span class="pill primary">Tier 1 target</span></div>
+
+        <div class="grid grid-4">
+          <div class="card"><div class="metric"><div><div class="metric-label">Overall readiness</div><div class="metric-value">64%</div><div class="metric-note green">+3 pts this week</div></div><div class="readiness-ring" style="--pct:64"><span>64</span></div></div></div>
+          <div class="card"><div class="metric"><div><div class="metric-label">Study time</div><div class="metric-value">8h 40m</div><div class="metric-note">72% of weekly target</div></div><div class="icon-dot">◷</div></div></div>
+          <div class="card"><div class="metric"><div><div class="metric-label">Questions solved</div><div class="metric-value">86</div><div class="metric-note green">+22 vs last week</div></div><div class="icon-dot">✓</div></div></div>
+          <div class="card"><div class="metric"><div><div class="metric-label">Current streak</div><div class="metric-value">7 days</div><div class="metric-note">720 XP earned</div></div><div class="icon-dot">★</div></div></div>
+        </div>
+
+        <div class="section-title"><div><h2>Your Next Best Action</h2><p>Highest-impact action selected from your current skill gaps</p></div><span class="pill red">High priority</span></div>
+        <div class="card priority-card">
+          <div class="priority-box">
+            <span class="pill red">DSA · Linked Lists</span>
+            <h3>Start with Linked Lists</h3>
+            <p>Your current Linked Lists score is <b>31%</b> against a <b>75%</b> target. Improving this topic closes one of your highest-impact technical gaps for a Software Developer pathway.</p>
+            <div class="tag-row" style="margin:10px 0">
+              <span class="tag">Current 31%</span><span class="tag">Target 75%</span><span class="tag">Gap 44 pts</span>
+            </div>
+            <button class="btn primary" onclick="openView('learning')">Learn → Practice → Test</button>
+          </div>
+          <div class="why-list">
+            <div class="why"><div class="icon-dot">1</div><div><b>Largest technical gap</b><span>DSA is currently below the recommended benchmark.</span></div></div>
+            <div class="why"><div class="icon-dot">2</div><div><b>High role impact</b><span>Core data structures frequently appear in technical screening.</span></div></div>
+            <div class="why"><div class="icon-dot">3</div><div><b>Focused action</b><span>A single topic is easier to act on than a long resource list.</span></div></div>
+          </div>
+        </div>
+
+        <div class="section-title"><div><h2>Competency snapshot</h2><p>Current score vs target benchmark</p></div><button class="btn secondary" onclick="openView('gaps')">Detailed breakdown →</button></div>
+        <div class="card">
+          <div class="skill-row"><div><div class="skill-name">Python</div><div class="skill-sub">Core language & syntax</div></div><div class="bar"><span class="green" style="width:78%"></span></div><div class="score">78%</div><div class="delta good">+3 target</div></div>
+          <div class="skill-row"><div><div class="skill-name">SQL</div><div class="skill-sub">Queries, joins & views</div></div><div class="bar"><span class="blue" style="width:56%"></span></div><div class="score">56%</div><div class="delta bad">−14 gap</div></div>
+          <div class="skill-row"><div><div class="skill-name">DSA</div><div class="skill-sub">Data structures & algorithms</div></div><div class="bar"><span class="red" style="width:42%"></span></div><div class="score">42%</div><div class="delta bad">−33 gap</div></div>
+          <div class="skill-row"><div><div class="skill-name">Aptitude</div><div class="skill-sub">Quantitative & logical reasoning</div></div><div class="bar"><span class="blue" style="width:61%"></span></div><div class="score">61%</div><div class="delta bad">−9 gap</div></div>
+          <div class="skill-row"><div><div class="skill-name">Communication</div><div class="skill-sub">Technical & behavioral clarity</div></div><div class="bar"><span class="green" style="width:70%"></span></div><div class="score">70%</div><div class="delta good">On target</div></div>
+        </div>
+
+        <div class="grid grid-2" style="margin-top:16px">
+          <div class="card">
+            <div class="section-title" style="margin-top:0"><div><h2>Today's preparation plan</h2><p>2 hours · Evening focus</p></div><span class="pill primary">1 of 4 complete</span></div>
+            <div class="timeline">
+              <div class="timeline-item"><div class="time-dot">✓</div><div><div class="schedule-title">Aptitude — Percentages</div><div class="schedule-sub">30 min · completed</div></div><span class="pill green">Done</span></div>
+              <div class="timeline-item"><div class="time-dot">✓</div><div><div class="schedule-title">SQL — Joins & Aggregations</div><div class="schedule-sub">45 min · completed</div></div><span class="pill green">Done</span></div>
+              <div class="timeline-item"><div class="time-dot">3</div><div><div class="schedule-title">DSA — Linked Lists</div><div class="schedule-sub">30 min · current focus</div></div><button class="btn soft" onclick="openView('practice')">Start</button></div>
+              <div class="timeline-item"><div class="time-dot">4</div><div><div class="schedule-title">Revision & flashcards</div><div class="schedule-sub">15 min · scheduled</div></div><span class="pill primary">7:45 PM</span></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="section-title" style="margin-top:0"><div><h2>Weekly velocity</h2><p>Last 7 days</p></div><span class="pill green">+12% trend</span></div>
+            <div class="chart">
+              <svg viewBox="0 0 500 210" preserveAspectRatio="none">
+                <line x1="25" y1="180" x2="485" y2="180" stroke="#e8eaf1" stroke-width="1"/>
+                <line x1="25" y1="120" x2="485" y2="120" stroke="#eef0f5" stroke-width="1"/>
+                <line x1="25" y1="60" x2="485" y2="60" stroke="#eef0f5" stroke-width="1"/>
+                <polyline fill="none" stroke="#3325f5" stroke-width="5" points="25,166 98,150 170,142 242,122 314,96 386,73 485,40"/>
+                <g fill="#3325f5"><circle cx="25" cy="166" r="5"/><circle cx="98" cy="150" r="5"/><circle cx="170" cy="142" r="5"/><circle cx="242" cy="122" r="5"/><circle cx="314" cy="96" r="5"/><circle cx="386" cy="73" r="5"/><circle cx="485" cy="40" r="5"/></g>
+              </svg>
+            </div>
+            <div class="grid grid-3">
+              <div class="card tight no-shadow"><div class="metric-label">Accuracy</div><div style="font-size:20px;font-weight:800;margin-top:5px">74%</div></div>
+              <div class="card tight no-shadow"><div class="metric-label">Practice</div><div style="font-size:20px;font-weight:800;margin-top:5px">14 drills</div></div>
+              <div class="card tight no-shadow"><div class="metric-label">XP</div><div style="font-size:20px;font-weight:800;margin-top:5px">720</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ASSESSMENT -->
+      <div class="view" id="view-assessment">
+        <div class="assessment-shell">
+          <div class="section-title"><div><h2>Placement readiness assessment</h2><p>20-question diagnostic · 15 minutes · Python, SQL, DSA & Aptitude</p></div><span class="pill primary" id="assessmentCounter">Question 1 of 5</span></div>
+
+          <div id="assessmentIntro" class="card">
+            <div class="grid grid-4">
+              <div class="card tight no-shadow" style="background:#f8f8fe"><div class="metric-label">Volume</div><div style="font-size:22px;font-weight:800;margin-top:5px">20</div><div class="tiny muted">questions</div></div>
+              <div class="card tight no-shadow" style="background:#f8f8fe"><div class="metric-label">Duration</div><div style="font-size:22px;font-weight:800;margin-top:5px">15m</div><div class="tiny muted">recommended</div></div>
+              <div class="card tight no-shadow" style="background:#f8f8fe"><div class="metric-label">Coverage</div><div style="font-size:22px;font-weight:800;margin-top:5px">4</div><div class="tiny muted">skill areas</div></div>
+              <div class="card tight no-shadow" style="background:#f8f8fe"><div class="metric-label">Goal</div><div style="font-size:22px;font-weight:800;margin-top:5px">75%</div><div class="tiny muted">benchmark</div></div>
+            </div>
+            <div class="divider"></div>
+            <h3 style="margin:0 0 8px">Before you begin</h3>
+            <div class="check-list">
+              <div class="check"><i>✓</i><span>Choose one correct answer for each question.</span></div>
+              <div class="check"><i>✓</i><span>Your results identify skill gaps and your next best preparation action.</span></div>
+              <div class="check"><i>✓</i><span>Your score is a starting point, not a judgement.</span></div>
+              <div class="check"><i>✓</i><span>For this single-file demo, the assessment uses 5 representative questions.</span></div>
+            </div>
+            <div style="margin-top:18px"><button class="btn primary" onclick="startAssessment()">Begin Assessment →</button></div>
+          </div>
+
+          <div id="assessmentPanel" style="display:none">
+            <div class="question">
+              <div class="question-num" id="qSkill">DSA · Data Structures</div>
+              <h2 id="qText"></h2>
+              <div id="options"></div>
+            </div>
+            <div class="actions" style="justify-content:space-between;margin-top:14px">
+              <button class="btn secondary" onclick="prevQuestion()">← Previous</button>
+              <button class="btn primary" onclick="nextQuestion()" id="nextQuestionBtn">Next →</button>
+            </div>
+          </div>
+
+          <div id="assessmentResult" style="display:none">
+            <div class="result-banner">
+              <div class="result-grid">
+                <div class="center">
+                  <div class="result-ring"><strong id="resultScore">64</strong></div>
+                  <div class="result-label">Readiness score</div>
+                </div>
+                <div>
+                  <span class="pill" style="background:rgba(255,255,255,.16);color:#fff">Assessment complete</span>
+                  <h2 style="font-size:25px;margin:10px 0 6px">You have a clear starting point.</h2>
+                  <p style="margin:0;color:rgba(255,255,255,.84);font-size:12px;line-height:1.55">PlacePilot has mapped your performance into skill scores and will prioritize the gap that has the biggest impact on your Software Developer preparation.</p>
+                </div>
+              </div>
+            </div>
+            <div class="section-title"><div><h2>Your competency breakdown</h2><p>Current performance vs target</p></div></div>
+            <div class="card" id="resultSkills"></div>
+            <div class="section-title"><div><h2>Signature recommendation</h2><p>Decision made from your largest weighted gap</p></div></div>
+            <div class="card priority-card">
+              <div class="priority-box"><span class="pill red">HIGH PRIORITY</span><h3>Start with Linked Lists</h3><p>Linked Lists is the current highest-impact DSA topic in this demo dataset.</p><button class="btn primary" onclick="openView('learning')">See Next Best Action →</button></div>
+              <div class="why-list"><div class="why"><div class="icon-dot">↳</div><div><b>Why this action?</b><span>Large skill gap + high technical relevance + focused topic.</span></div></div><div class="why"><div class="icon-dot">75</div><div><b>Target</b><span>Recommended benchmark for the selected role.</span></div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- GAPS -->
+      <div class="view" id="view-gaps">
+        <div class="section-title"><div><h2>Skill Gap Analysis</h2><p>Current score compared against target benchmarks</p></div><span class="pill red">1 critical gap</span></div>
+        <div class="card">
+          <div class="skill-row"><div><div class="skill-name">DSA</div><div class="skill-sub">Core algorithms & data structures</div></div><div class="bar"><span class="red" style="width:42%"></span></div><div class="score">42 / 75</div><div class="delta bad">−33 pts</div></div>
+          <div class="skill-row"><div><div class="skill-name">SQL</div><div class="skill-sub">Joins, indexes & relational queries</div></div><div class="bar"><span class="blue" style="width:56%"></span></div><div class="score">56 / 70</div><div class="delta bad">−14 pts</div></div>
+          <div class="skill-row"><div><div class="skill-name">Aptitude</div><div class="skill-sub">Quantitative & logical reasoning</div></div><div class="bar"><span class="blue" style="width:61%"></span></div><div class="score">61 / 70</div><div class="delta bad">−9 pts</div></div>
+          <div class="skill-row"><div><div class="skill-name">Python</div><div class="skill-sub">Core language & programming</div></div><div class="bar"><span class="green" style="width:78%"></span></div><div class="score">78 / 75</div><div class="delta good">+3 pts</div></div>
+          <div class="skill-row"><div><div class="skill-name">Communication</div><div class="skill-sub">Technical articulation & delivery</div></div><div class="bar"><span class="green" style="width:70%"></span></div><div class="score">70 / 70</div><div class="delta good">On target</div></div>
+        </div>
+
+        <div class="section-title"><div><h2>Topic-level DSA prioritization</h2><p>Ranked by gap and role impact</p></div><span class="pill primary">Recommended order</span></div>
+        <div class="grid grid-2">
+          <div class="card">
+            <div class="skill-row"><div><div class="skill-name">Linked Lists</div><div class="skill-sub">Pointers, traversal, reversal</div></div><div class="bar"><span class="red" style="width:31%"></span></div><div class="score">31%</div><div class="delta bad">HIGH</div></div>
+            <div class="skill-row"><div><div class="skill-name">Graphs</div><div class="skill-sub">BFS, DFS, shortest path</div></div><div class="bar"><span class="red" style="width:24%"></span></div><div class="score">24%</div><div class="delta bad">HIGH</div></div>
+            <div class="skill-row"><div><div class="skill-name">Trees</div><div class="skill-sub">Traversal, BST, recursion</div></div><div class="bar"><span class="orange" style="width:38%"></span></div><div class="score">38%</div><div class="delta neutral">MEDIUM</div></div>
+            <div class="skill-row"><div><div class="skill-name">Stacks</div><div class="skill-sub">Monotonic stack & expressions</div></div><div class="bar"><span class="blue" style="width:45%"></span></div><div class="score">45%</div><div class="delta neutral">MEDIUM</div></div>
+            <div class="skill-row"><div><div class="skill-name">Queues</div><div class="skill-sub">Sliding window & deque</div></div><div class="bar"><span class="blue" style="width:52%"></span></div><div class="score">52%</div><div class="delta good">IMPROVING</div></div>
+          </div>
+          <div class="card">
+            <span class="pill primary">Priority engine</span>
+            <h3 style="font-size:20px;margin:10px 0">Recommended improvement order</h3>
+            <div class="timeline">
+              <div class="timeline-item"><div class="time-dot">1</div><div><div class="schedule-title">Linked Lists</div><div class="schedule-sub">Highest-impact gap</div></div><span class="pill red">Now</span></div>
+              <div class="timeline-item"><div class="time-dot">2</div><div><div class="schedule-title">Graphs</div><div class="schedule-sub">High technical impact</div></div><span class="pill red">Next</span></div>
+              <div class="timeline-item"><div class="time-dot">3</div><div><div class="schedule-title">Trees</div><div class="schedule-sub">Core foundation</div></div><span class="pill yellow">Then</span></div>
+              <div class="timeline-item"><div class="time-dot">4</div><div><div class="schedule-title">Stacks</div><div class="schedule-sub">Interview reinforcement</div></div><span class="pill yellow">Later</span></div>
+              <div class="timeline-item"><div class="time-dot">5</div><div><div class="schedule-title">Queues</div><div class="schedule-sub">Maintain through practice</div></div><span class="pill green">Maintain</span></div>
+            </div>
+            <div class="divider"></div>
+            <button class="btn primary block" onclick="openView('learning')">Open Next Best Action →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- LEARNING -->
+      <div class="view" id="view-learning">
+        <div class="hero">
+          <span class="pill" style="background:rgba(255,255,255,.14);color:#fff">Prescriptive core direct</span>
+          <h1 style="margin-top:10px">Start with Linked Lists</h1>
+          <p>Highest-return focused action for the current DSA gap.</p>
+          <div class="tag-row">
+            <span class="tag">Current 31%</span><span class="tag">Target 75%</span><span class="tag">Gap 44 pts</span><span class="tag">Priority: High</span>
+          </div>
+        </div>
+        <div class="section-title"><div><h2>Why this action?</h2><p>Transparent decision trace</p></div><span class="pill green">Explainable</span></div>
+        <div class="card priority-card">
+          <div class="priority-box">
+            <span class="pill red">Core algorithmic finding</span>
+            <h3>Linked Lists is your highest-impact DSA topic</h3>
+            <p>The recommendation combines your current topic score, role target, and skill importance. The system deliberately chooses a single focused action rather than overwhelming you with resources.</p>
+            <div class="divider"></div>
+            <div class="tag-row"><span class="tag">DSA score 42%</span><span class="tag">Topic score 31%</span><span class="tag">Role weight: High</span></div>
+          </div>
+          <div class="why-list">
+            <div class="why"><div class="icon-dot">1</div><div><b>Assessment score</b><span>Large current deficit.</span></div></div>
+            <div class="why"><div class="icon-dot">2</div><div><b>Role fit</b><span>Important for Software Developer technical rounds.</span></div></div>
+            <div class="why"><div class="icon-dot">3</div><div><b>Prerequisite value</b><span>Improves the foundation for more advanced structures.</span></div></div>
+          </div>
+        </div>
+
+        <div class="section-title"><div><h2>Prescribed learning sequence</h2><p>Learn → Practice → Test</p></div><span class="pill primary">2-day cycle</span></div>
+        <div class="grid grid-3">
+          <div class="card resource-card">
+            <span class="pill green">Free · YouTube</span>
+            <div style="margin-top:12px;height:120px;border-radius:12px;background:linear-gradient(135deg,#171b2c,#4650b7);display:grid;place-items:center;color:#fff;font-size:28px">▶</div>
+            <h3>Linked List Fundamentals</h3>
+            <p>28 min · Beginner · pointers, traversal, insertion and deletion.</p>
+            <button class="btn primary" style="margin-top:12px" onclick="showToast('Lesson started — +10 XP')">Start Learning</button>
+          </div>
+          <div class="card">
+            <span class="pill primary">Practice</span>
+            <h3 style="font-size:17px;margin:12px 0 6px">5 high-yield drills</h3>
+            <p class="body muted">Reverse a linked list, detect a cycle, find the middle node, merge two sorted lists, remove duplicates.</p>
+            <button class="btn soft" style="margin-top:15px" onclick="openView('practice')">Practice Now →</button>
+          </div>
+          <div class="card">
+            <span class="pill green">Reassessment</span>
+            <h3 style="font-size:17px;margin:12px 0 6px">Update your skill score</h3>
+            <p class="body muted">Complete the practice set, then take a short diagnostic to update your readiness and next recommendation.</p>
+            <button class="btn secondary" style="margin-top:15px" onclick="openView('assessment')">Take Reassessment →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- RESOURCES -->
+      <div class="view" id="view-resources">
+        <div class="section-title"><div><h2>Curated resources</h2><p>Free and role-aligned learning material</p></div><span class="pill green">Verified demo set</span></div>
+        <div class="grid grid-3">
+          <div class="card resource-card"><span class="pill green">Recommended · FREE</span><div style="margin-top:10px;height:120px;border-radius:12px;background:linear-gradient(145deg,#141827,#3b55ad);display:grid;place-items:center;color:#fff;font-size:34px">▶</div><h3>Linked List Fundamentals</h3><p>DSA · Beginner · 28 min · targeted to current high-priority gap.</p><button class="btn primary" style="margin-top:12px" onclick="showToast('Opening resource demo')">Start Learning →</button></div>
+          <div class="card resource-card"><span class="pill primary">Interactive</span><div style="margin-top:10px;height:120px;border-radius:12px;background:#eff0ff;display:grid;place-items:center;font-size:42px;color:var(--primary)">⌘</div><h3>SQL Joins Deep Dive</h3><p>SQL · Intermediate · 35 min · joins, indexes and aggregation patterns.</p><button class="btn primary" style="margin-top:12px" onclick="showToast('Opening resource demo')">Open Resource →</button></div>
+          <div class="card resource-card"><span class="pill green">Recommended · FREE</span><div style="margin-top:10px;height:120px;border-radius:12px;background:#eefbf5;display:grid;place-items:center;font-size:42px;color:#0d9969">◌</div><h3>Binary Trees & Traversals</h3><p>DSA · Intermediate · 45 min · traversal and recursion practice.</p><button class="btn primary" style="margin-top:12px" onclick="showToast('Opening resource demo')">Start Learning →</button></div>
+        </div>
+      </div>
+
+      <!-- PRACTICE -->
+      <div class="view" id="view-practice">
+        <div class="hero">
+          <span class="pill" style="background:rgba(255,255,255,.14);color:#fff">Recommended practice</span>
+          <h1>DSA — Linked Lists</h1>
+          <p>Your practice queue is generated from your current gap. Complete meaningful work to grow your streak and XP.</p>
+          <div class="hero-actions"><button class="btn secondary" onclick="launchPractice()">Start Practice Drill →</button><span class="pill" style="background:rgba(255,255,255,.12);color:#fff">5 questions · +20 XP</span></div>
+        </div>
+        <div class="grid grid-4" style="margin-top:16px">
+          <div class="card"><div class="metric-label">Solved</div><div class="metric-value">86</div><div class="metric-note">+12 this week</div></div>
+          <div class="card"><div class="metric-label">Accuracy</div><div class="metric-value">74%</div><div class="metric-note green">Above target</div></div>
+          <div class="card"><div class="metric-label">Practice time</div><div class="metric-value">5h 20m</div><div class="metric-note">This week</div></div>
+          <div class="card"><div class="metric-label">XP</div><div class="metric-value">720</div><div class="metric-note">Level 4 candidate</div></div>
+        </div>
+        <div class="section-title"><div><h2>Practice queue</h2><p>Ranked by placement impact</p></div></div>
+        <div class="card">
+          <table class="table">
+            <thead><tr><th>Topic</th><th>Difficulty</th><th>Previous accuracy</th><th>Priority</th><th></th></tr></thead>
+            <tbody>
+              <tr><td><b>Linked Lists</b><br><span class="muted tiny">Reversal & cycle detection</span></td><td>Beginner</td><td>31%</td><td><span class="pill red">High</span></td><td><button class="btn soft" onclick="launchPractice()">Practice</button></td></tr>
+              <tr><td><b>Joins & Aggregations</b><br><span class="muted tiny">SQL query patterns</span></td><td>Intermediate</td><td>56%</td><td><span class="pill yellow">Medium</span></td><td><button class="btn secondary" onclick="showToast('SQL drill queued')">Practice</button></td></tr>
+              <tr><td><b>Object-Oriented Design</b><br><span class="muted tiny">Inheritance & abstraction</span></td><td>Intermediate</td><td>78%</td><td><span class="pill green">Maintain</span></td><td><button class="btn secondary" onclick="showToast('Maintenance drill queued')">Practice</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- PROGRESS -->
+      <div class="view" id="view-progress">
+        <div class="section-title"><div><h2>Progress analytics</h2><p>Readiness, skill velocity, study time, and completed work</p></div><span class="pill green">+12% trend</span></div>
+        <div class="grid grid-4">
+          <div class="card"><div class="metric-label">Current readiness</div><div class="metric-value">64%</div><div class="metric-note green">+12 pts since baseline</div></div>
+          <div class="card"><div class="metric-label">Study time</div><div class="metric-value">8h 40m</div><div class="metric-note">72% weekly target</div></div>
+          <div class="card"><div class="metric-label">Accuracy</div><div class="metric-value">74%</div><div class="metric-note">86 questions</div></div>
+          <div class="card"><div class="metric-label">Streak</div><div class="metric-value">7 days</div><div class="metric-note">720 XP</div></div>
+        </div>
+        <div class="grid grid-2" style="margin-top:16px">
+          <div class="card"><div class="section-title" style="margin-top:0"><div><h2>Readiness trend</h2><p>Weekly aggregate</p></div><span class="pill primary">75% target</span></div><div class="chart"><svg viewBox="0 0 500 210" preserveAspectRatio="none"><line x1="25" y1="180" x2="485" y2="180" stroke="#e8eaf1"/><polyline fill="none" stroke="#3325f5" stroke-width="5" points="25,155 130,135 235,108 340,87 485,64"/><g fill="#3325f5"><circle cx="25" cy="155" r="5"/><circle cx="130" cy="135" r="5"/><circle cx="235" cy="108" r="5"/><circle cx="340" cy="87" r="5"/><circle cx="485" cy="64" r="5"/></g></svg></div></div>
+          <div class="card"><div class="section-title" style="margin-top:0"><div><h2>Skill velocity</h2><p>Current improvement</p></div></div><div class="progress-list">
+            <div><div class="progress-head"><span>DSA</span><b>+9 pts</b></div><div class="bar"><span class="blue" style="width:69%"></span></div></div>
+            <div><div class="progress-head"><span>SQL</span><b>+6 pts</b></div><div class="bar"><span class="blue" style="width:61%"></span></div></div>
+            <div><div class="progress-head"><span>Python</span><b>+5 pts</b></div><div class="bar"><span class="green" style="width:78%"></span></div></div>
+            <div><div class="progress-head"><span>Aptitude</span><b>+6 pts</b></div><div class="bar"><span class="blue" style="width:54%"></span></div></div>
+            <div><div class="progress-head"><span>Communication</span><b>+3 pts</b></div><div class="bar"><span class="green" style="width:70%"></span></div></div>
+          </div></div>
+        </div>
+      </div>
+
+      <!-- PROJECTS -->
+      <div class="view" id="view-projects">
+        <div class="section-title"><div><h2>Projects & portfolio</h2><p>Projects connected to your placement skill gaps</p></div><button class="btn primary" onclick="showToast('Project form demo opened')">+ Add Project</button></div>
+        <div class="grid grid-2">
+          <div class="card"><div class="metric"><div><span class="pill green">Completed</span><h3 style="font-size:16px;margin:10px 0 4px">Student Attendance System</h3><p class="small muted">Python · Flask · SQLite · HTML/CSS/JS</p></div><span class="pill primary">Portfolio 78%</span></div><p class="body muted">Backend-oriented project showing API development, authentication, database design, and reporting.</p><div class="tag-row"><span class="tag">Backend</span><span class="tag">Database</span><span class="tag">API</span></div><button class="btn soft" style="margin-top:14px" onclick="showToast('Project details opened')">View Project</button></div>
+          <div class="card"><div class="metric"><div><span class="pill primary">In progress</span><h3 style="font-size:16px;margin:10px 0 4px">Traffic Prediction System</h3><p class="small muted">Python · Pandas · Scikit-learn · Flask</p></div><span class="pill yellow">Skill match 84%</span></div><p class="body muted">ML project aligned to data preprocessing, model evaluation, prediction APIs, and technical presentation.</p><div class="tag-row"><span class="tag">ML</span><span class="tag">Prediction</span><span class="tag">API</span></div><button class="btn primary" style="margin-top:14px" onclick="showToast('Project workspace opened')">Continue Project</button></div>
+        </div>
+        <div class="section-title"><div><h2>Recommended weekend projects</h2><p>Generated from your current gaps</p></div></div>
+        <div class="grid grid-3">
+          <div class="card"><span class="pill red">DSA gap</span><h3>Linked List Visualizer</h3><p class="body muted">Build an interactive tool for insertion, deletion, reversal, and cycle detection.</p><button class="btn primary" onclick="showToast('Project added to portfolio plan')">Start Project</button></div>
+          <div class="card"><span class="pill yellow">SQL gap</span><h3>SQL Analytics Dashboard</h3><p class="body muted">Use joins, aggregation, filters, and charts to build a practical analytics dashboard.</p><button class="btn secondary" onclick="showToast('Project added to portfolio plan')">View Brief</button></div>
+          <div class="card"><span class="pill primary">Core</span><h3>RESTful E-commerce Microservice</h3><p class="body muted">Practice API design, authentication, database modeling, and error handling.</p><button class="btn secondary" onclick="showToast('Project added to portfolio plan')">View Brief</button></div>
+        </div>
+      </div>
+
+      <!-- MOCK -->
+      <div class="view" id="view-mock">
+        <div class="section-title"><div><h2>Mock Interview</h2><p>Practice technical, HR, coding, project, or mixed interviews</p></div><span class="pill green">Text mode ready</span></div>
+        <div class="hero"><span class="pill" style="background:rgba(255,255,255,.14);color:#fff">Recommended for you</span><h1 style="margin-top:10px">Software Developer — Mixed Interview</h1><p>25 minutes · 10 questions · technical + project + communication practice.</p><div class="hero-actions"><button class="btn secondary" onclick="launchMock()">Start Mock Interview</button></div></div>
+        <div class="section-title"><div><h2>Select interview track</h2><p>Choose the simulation format</p></div></div>
+        <div class="grid grid-3">
+          <div class="card"><span class="pill primary">Beginner</span><h3>HR Interview</h3><p class="body muted">Behavioral situations, culture fit, and structured STAR answers.</p><button class="btn soft" onclick="launchMock()">Launch Session</button></div>
+          <div class="card"><span class="pill primary">Intermediate</span><h3>Technical Interview</h3><p class="body muted">CS fundamentals, Python, SQL, DSA, and system thinking.</p><button class="btn soft" onclick="launchMock()">Launch Session</button></div>
+          <div class="card"><span class="pill green">Comprehensive</span><h3>Mixed Interview</h3><p class="body muted">Technical depth, project walkthrough, and communication.</p><button class="btn primary" onclick="launchMock()">Launch Session</button></div>
+        </div>
+      </div>
+
+      <!-- ROLES -->
+      <div class="view" id="view-roles">
+        <div class="section-title"><div><h2>Role Readiness</h2><p>See how your current skill profile maps to target roles</p></div><span class="pill primary">Software Developer selected</span></div>
+        <div class="grid grid-3">
+          <div class="card"><span class="pill primary">Selected goal</span><h3 style="font-size:18px;margin:12px 0 5px">Software Developer</h3><p class="small muted">Core software engineering / backend</p><div class="divider"></div><div class="metric"><div><div class="metric-label">Match</div><div class="metric-value">72%</div><div class="metric-note">11 pts below Tier 1 target</div></div><div class="readiness-ring" style="--pct:72"><span>72</span></div></div></div>
+          <div class="card"><span class="pill primary">Alternative</span><h3 style="font-size:18px;margin:12px 0 5px">AI / ML Engineer</h3><p class="small muted">Models, data prep, and ML systems</p><div class="divider"></div><div class="metric"><div><div class="metric-label">Match</div><div class="metric-value">68%</div><div class="metric-note">Data structures need work</div></div><div class="readiness-ring" style="--pct:68"><span>68</span></div></div></div>
+          <div class="card"><span class="pill green">Emerging fit</span><h3 style="font-size:18px;margin:12px 0 5px">Data Analyst</h3><p class="small muted">SQL, Excel, Python & insights</p><div class="divider"></div><div class="metric"><div><div class="metric-label">Match</div><div class="metric-value">74%</div><div class="metric-note green">Strong SQL alignment</div></div><div class="readiness-ring" style="--pct:74"><span>74</span></div></div></div>
+        </div>
+        <div class="section-title"><div><h2>Software Developer competency matrix</h2><p>Current score, required target, and action</p></div></div>
+        <div class="card">
+          <div class="skill-row"><div><div class="skill-name">Python</div><div class="skill-sub">Core programming</div></div><div class="bar"><span class="green" style="width:78%"></span></div><div class="score">78 / 75</div><div class="delta good">Strong</div></div>
+          <div class="skill-row"><div><div class="skill-name">DSA</div><div class="skill-sub">Algorithms & structures</div></div><div class="bar"><span class="red" style="width:42%"></span></div><div class="score">42 / 75</div><div class="delta bad">Critical</div></div>
+          <div class="skill-row"><div><div class="skill-name">SQL</div><div class="skill-sub">Relational queries</div></div><div class="bar"><span class="blue" style="width:56%"></span></div><div class="score">56 / 70</div><div class="delta bad">Improve</div></div>
+          <div class="skill-row"><div><div class="skill-name">Aptitude</div><div class="skill-sub">Quant & logical</div></div><div class="bar"><span class="blue" style="width:61%"></span></div><div class="score">61 / 70</div><div class="delta bad">Improve</div></div>
+          <div class="skill-row"><div><div class="skill-name">Communication</div><div class="skill-sub">Technical delivery</div></div><div class="bar"><span class="green" style="width:70%"></span></div><div class="score">70 / 70</div><div class="delta good">On target</div></div>
+        </div>
+      </div>
+
+      <!-- JOBS -->
+      <div class="view" id="view-jobs">
+        <div class="section-title"><div><h2>Jobs & Hiring Drives</h2><p>Opportunities aligned to your preparation profile</p></div><span class="pill green">4 new matches</span></div>
+        <div class="card">
+          <div class="job"><div><span class="pill primary">Campus</span><h3>Software Developer — Graduate</h3><p>Entry level · Hyderabad / Bengaluru · Preparation alignment 72%</p><div class="job-meta"><span class="tag">Python</span><span class="tag">SQL</span><span class="tag">DSA</span></div></div><div class="actions"><button class="btn secondary" onclick="showToast('Saved job')">Save</button><button class="btn primary" onclick="showToast('Preparation track opened')">Prepare</button></div></div>
+          <div class="job"><div><span class="pill yellow">Off-campus</span><h3>Specialist Programmer — Software</h3><p>Bengaluru / Hyderabad · Preparation alignment 68%</p><div class="job-meta"><span class="tag">Advanced DSA</span><span class="tag">Problem solving</span></div></div><div class="actions"><button class="btn secondary" onclick="showToast('Saved job')">Save</button><button class="btn primary" onclick="showToast('Preparation track opened')">Prepare</button></div></div>
+          <div class="job"><div><span class="pill green">Recommended</span><h3>Associate Software Engineer</h3><p>Multiple locations · Preparation alignment 75%</p><div class="job-meta"><span class="tag">Aptitude</span><span class="tag">Technical</span></div></div><div class="actions"><button class="btn secondary" onclick="showToast('Saved job')">Save</button><button class="btn primary" onclick="showToast('Preparation track opened')">Prepare</button></div></div>
+        </div>
+      </div>
+
+      <!-- RESUME -->
+      <div class="view" id="view-resume">
+        <div class="section-title"><div><h2>Resume Builder & Readiness</h2><p>Track completeness and role alignment before applying</p></div><button class="btn primary" onclick="showToast('Resume export demo')">Export Resume</button></div>
+        <div class="grid grid-3">
+          <div class="card"><div class="metric"><div><div class="metric-label">Resume readiness</div><div class="resume-score">78%</div><div class="metric-note green">Good foundation</div></div><div class="readiness-ring" style="--pct:78"><span>78</span></div></div></div>
+          <div class="card"><div class="metric-label">Content checks</div><div style="font-size:24px;font-weight:800;margin-top:7px">12 / 14</div><div class="metric-note">2 opportunities to strengthen</div><div class="tag-row" style="margin-top:14px"><span class="tag">Projects</span><span class="tag">Skills</span><span class="tag">Education</span></div></div>
+          <div class="card"><div class="metric-label">Role alignment</div><div style="font-size:24px;font-weight:800;margin-top:7px">72%</div><div class="metric-note">Software Developer target</div><button class="btn soft" style="margin-top:13px" onclick="openView('roles')">View Role Gaps</button></div>
+        </div>
+        <div class="section-title"><div><h2>Resume sections</h2><p>Only verified information should be claimed</p></div></div>
+        <div class="card">
+          <div class="setting-row"><div><b>Contact & profile</b><div class="tiny muted">Name, email, phone, links</div></div><span class="pill green">Complete</span></div>
+          <div class="setting-row"><div><b>Education</b><div class="tiny muted">Degree, institution, graduation year</div></div><span class="pill green">Complete</span></div>
+          <div class="setting-row"><div><b>Skills</b><div class="tiny muted">Python, SQL, Flask, ML, etc.</div></div><span class="pill yellow">Review</span></div>
+          <div class="setting-row"><div><b>Projects</b><div class="tiny muted">2 projects with outcomes</div></div><span class="pill yellow">Add metrics</span></div>
+        </div>
+      </div>
+
+      <!-- REPORTS -->
+      <div class="view" id="view-reports">
+        <div class="section-title"><div><h2>Weekly Report</h2><p>Summary of your recent preparation and what to do next</p></div><button class="btn secondary" onclick="showToast('Weekly PDF export demo')">Download PDF</button></div>
+        <div class="card"><div class="metric"><div><div class="metric-label">Current readiness</div><div class="metric-value">64%</div><div class="metric-note green">+3 pts this week</div></div><span class="pill green">On track</span></div>
+        <div class="divider"></div>
+        <div class="grid grid-4"><div><div class="metric-label">Study time</div><div style="font-size:20px;font-weight:800;margin-top:5px">8h 40m</div></div><div><div class="metric-label">Questions</div><div style="font-size:20px;font-weight:800;margin-top:5px">86</div></div><div><div class="metric-label">Accuracy</div><div style="font-size:20px;font-weight:800;margin-top:5px">74%</div></div><div><div class="metric-label">Streak</div><div style="font-size:20px;font-weight:800;margin-top:5px">7 days</div></div></div></div>
+        <div class="grid grid-2" style="margin-top:16px">
+          <div class="card"><h3>Weekly wins</h3><div class="check-list" style="margin-top:12px"><div class="check"><i>✓</i><span>Completed 32 practice tasks.</span></div><div class="check"><i>✓</i><span>Improved DSA score from baseline.</span></div><div class="check"><i>✓</i><span>Maintained 7-day active streak.</span></div></div></div>
+          <div class="card"><h3>Next week's focus</h3><p class="body muted">Continue Linked Lists practice, then move to Graphs. Keep SQL joins in the weekly maintenance rotation.</p><button class="btn primary" onclick="openView('learning')">View Plan →</button></div>
+        </div>
+      </div>
+
+      <!-- PROFILE -->
+      <div class="view" id="view-profile">
+        <div class="section-title"><div><h2>Student Profile</h2><p>Your placement identity, goals, and verified skills</p></div><button class="btn primary" onclick="showToast('Profile edit mode enabled')">Edit Profile</button></div>
+        <div class="grid grid-3">
+          <div class="card"><div class="avatar large">VG</div><h3 style="margin:12px 0 4px">Student Candidate</h3><p class="small muted">Computer Science & Engineering</p><div class="tag-row" style="margin-top:10px"><span class="tag">Batch 2027</span><span class="tag">Software Developer</span></div></div>
+          <div class="card"><div class="metric-label">Profile readiness</div><div class="metric-value">82%</div><div class="metric-note green">Verified core information</div><div class="bar" style="margin-top:16px"><span class="green" style="width:82%"></span></div></div>
+          <div class="card"><div class="metric-label">Target preparation</div><div style="font-size:18px;font-weight:800;margin-top:6px">Software Developer</div><div class="metric-note">Core backend / distributed systems</div></div>
+        </div>
+        <div class="section-title"><div><h2>Career preferences</h2><p>Used to personalize preparation</p></div></div>
+        <div class="card">
+          <div class="form-grid">
+            <div><label class="label">Primary target role</label><input class="input" value="Software Developer" /></div>
+            <div><label class="label">Preferred study window</label><input class="input" value="Evening · 7:00 PM" /></div>
+            <div class="full"><label class="label">Preferred placement hubs</label><input class="input" value="Bengaluru, Hyderabad, Chennai" /></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SETTINGS -->
+      <div class="view" id="view-settings">
+        <div class="section-title"><div><h2>Settings</h2><p>Account, notifications, privacy, appearance, and accessibility</p></div></div>
+        <div class="grid grid-2">
+          <div class="card"><h3>Notifications</h3><div class="setting-row"><div><b>Daily study reminder</b><div class="tiny muted">Send at your preferred study time</div></div><button class="toggle on" onclick="toggleSetting(this)"><span></span></button></div><div class="setting-row"><div><b>Assessment due</b><div class="tiny muted">Only important assessment deadlines</div></div><button class="toggle on" onclick="toggleSetting(this)"><span></span></button></div><div class="setting-row"><div><b>Weekly report</b><div class="tiny muted">One summary each week</div></div><button class="toggle on" onclick="toggleSetting(this)"><span></span></button></div></div>
+          <div class="card"><h3>Appearance & accessibility</h3><div class="setting-row"><div><b>Light mode</b><div class="tiny muted">High-readability default theme</div></div><button class="toggle on" onclick="toggleSetting(this)"><span></span></button></div><div class="setting-row"><div><b>Reduced motion</b><div class="tiny muted">Limit interface animation</div></div><button class="toggle" onclick="toggleSetting(this)"><span></span></button></div><div class="setting-row"><div><b>High contrast</b><div class="tiny muted">Increase UI contrast</div></div><button class="toggle" onclick="toggleSetting(this)"><span></span></button></div></div>
+        </div>
+        <div class="card" style="margin-top:16px"><h3>Privacy & Security</h3><div class="setting-row"><div><b>Account password</b><div class="tiny muted">Change your password securely</div></div><button class="btn secondary" onclick="showToast('Password update demo')">Update</button></div><div class="setting-row"><div><b>Two-factor authentication</b><div class="tiny muted">Protect your account with an additional factor</div></div><button class="btn soft" onclick="showToast('2FA setup demo')">Configure</button></div><div class="setting-row"><div><b>Data export</b><div class="tiny muted">Download your PlacePilot data</div></div><button class="btn secondary" onclick="showToast('Data export demo')">Export</button></div></div>
+      </div>
+
+    </section>
+
+    <div class="footer-note">PlacePilot · Assess. Improve. Get Placement Ready. · Single-file demo build</div>
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const state = {
+  view: "dashboard",
+  currentQuestion: 0,
+  answers: {},
+  xp: 720,
+  assessmentComplete: false
+};
+
+const questions = [
+  {id:1,skill:"DSA",topic:"Data Structures",question:"Which data structure follows FIFO?",options:["Stack","Queue","Tree","Graph"],answer:"Queue"},
+  {id:2,skill:"Python",topic:"Python Basics",question:"Which keyword is used to define a function in Python?",options:["func","define","def","function"],answer:"def"},
+  {id:3,skill:"SQL",topic:"SQL Basics",question:"Which SQL command is used to retrieve data?",options:["GET","SELECT","FETCH","OPEN"],answer:"SELECT"},
+  {id:4,skill:"Aptitude",topic:"Percentages",question:"What is 20% of 200?",options:["20","30","40","50"],answer:"40"},
+  {id:5,skill:"DSA",topic:"Algorithms",question:"Which algorithm is commonly used to find the shortest path in a weighted graph?",options:["Binary Search","Dijkstra's Algorithm","Bubble Sort","DFS"],answer:"Dijkstra's Algorithm"}
+];
+
+function openView(view){
+  document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));
+  const target=document.getElementById("view-"+view);
+  if(target) target.classList.add("active");
+  document.querySelectorAll(".nav-item").forEach(n=>n.classList.toggle("active",n.dataset.view===view));
+  state.view=view;
+  const names={
+    dashboard:"Dashboard / Overview",assessment:"Assessments / Diagnostic",gaps:"Skill Gaps / Priority Map",
+    learning:"Learning Plan / Next Best Action",resources:"Resources / Curated Library",practice:"Practice / Drills",
+    progress:"Progress / Analytics",projects:"Projects / Portfolio",mock:"Mock Interview / Practice",
+    roles:"Role Readiness / Competency",jobs:"Jobs & Hiring / Opportunities",resume:"Resume / Readiness",
+    reports:"Reports / Weekly Summary",profile:"Profile / Candidate",settings:"Settings / Account"
+  };
+  document.getElementById("crumb").textContent=names[view]||"PlacePilot";
+  window.scrollTo({top:0,behavior:"smooth"});
+  document.getElementById("sidebar").classList.remove("open");
+}
+
+document.querySelectorAll(".nav-item").forEach(btn=>btn.addEventListener("click",()=>openView(btn.dataset.view)));
+
+document.getElementById("menuBtn").addEventListener("click",()=>{
+  document.getElementById("sidebar").classList.toggle("open");
+});
+
+function showToast(message){
+  const t=document.getElementById("toast");
+  t.textContent=message;
+  t.classList.add("show");
+  clearTimeout(showToast.timer);
+  showToast.timer=setTimeout(()=>t.classList.remove("show"),2200);
+}
+
+function startAssessment(){
+  state.currentQuestion=0;
+  state.answers={};
+  document.getElementById("assessmentIntro").style.display="none";
+  document.getElementById("assessmentResult").style.display="none";
+  document.getElementById("assessmentPanel").style.display="block";
+  renderQuestion();
+}
+
+function renderQuestion(){
+  const q=questions[state.currentQuestion];
+  document.getElementById("assessmentCounter").textContent=`Question ${state.currentQuestion+1} of ${questions.length}`;
+  document.getElementById("qSkill").textContent=`${q.skill} · ${q.topic}`;
+  document.getElementById("qText").textContent=q.question;
+  document.getElementById("options").innerHTML=q.options.map((o,i)=>{
+    const letter=String.fromCharCode(65+i);
+    return `<button class="option ${state.answers[q.id]===o?'selected':''}" onclick="selectAnswer('${escapeHtml(o)}')"><span class="option-letter">${letter}</span><span>${escapeHtml(o)}</span></button>`;
+  }).join("");
+  document.getElementById("nextQuestionBtn").textContent=state.currentQuestion===questions.length-1?"Submit Assessment ✓":"Next →";
+}
+
+function escapeHtml(v){
+  return v.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
+}
+
+function selectAnswer(answer){
+  state.answers[questions[state.currentQuestion].id]=answer;
+  renderQuestion();
+}
+
+function nextQuestion(){
+  if(!state.answers[questions[state.currentQuestion].id]){
+    showToast("Please select an answer first.");
+    return;
+  }
+  if(state.currentQuestion<questions.length-1){
+    state.currentQuestion++;
+    renderQuestion();
+  }else{
+    completeAssessment();
+  }
+}
+
+function prevQuestion(){
+  if(state.currentQuestion>0){
+    state.currentQuestion--;
+    renderQuestion();
+  }else{
+    showToast("You are on the first question.");
+  }
+}
+
+function completeAssessment(){
+  const scores={Python:{correct:0,total:0},SQL:{correct:0,total:0},DSA:{correct:0,total:0},Aptitude:{correct:0,total:0}};
+  questions.forEach(q=>{
+    scores[q.skill].total++;
+    if(state.answers[q.id]===q.answer) scores[q.skill].correct++;
+  });
+  const skillScores={};
+  Object.keys(scores).forEach(skill=>{
+    skillScores[skill]=Math.round(scores[skill].correct/scores[skill].total*100);
+  });
+  const readiness=Math.round(Object.values(skillScores).reduce((a,b)=>a+b,0)/Object.keys(skillScores).length);
+  state.assessmentComplete=true;
+  localStorage.setItem("placepilotAssessment",JSON.stringify({answers:state.answers,skillScores,readiness}));
+  document.getElementById("assessmentPanel").style.display="none";
+  document.getElementById("assessmentResult").style.display="block";
+  document.getElementById("resultScore").textContent=readiness;
+  const targets={Python:75,SQL:70,DSA:75,Aptitude:70};
+  const colors={Python:"green",SQL:"blue",DSA:"red",Aptitude:"blue"};
+  document.getElementById("resultSkills").innerHTML=Object.keys(skillScores).map(skill=>{
+    const pct=skillScores[skill],target=targets[skill],delta=pct-target;
+    return `<div class="skill-row"><div><div class="skill-name">${skill}</div><div class="skill-sub">Assessment score</div></div><div class="bar"><span class="${colors[skill]}" style="width:${pct}%"></span></div><div class="score">${pct}%</div><div class="delta ${delta>=0?'good':'bad'}">${delta>=0?'+'+delta:delta} pts</div></div>`;
+  }).join("");
+  showToast(`Assessment complete · Readiness ${readiness}%`);
+}
+
+function launchPractice(){
+  state.xp+=20;
+  localStorage.setItem("placepilotXp",state.xp);
+  showToast("Practice session started · +20 XP on completion");
+}
+
+function launchMock(){
+  showToast("Mock interview session opened");
+}
+
+function toggleSetting(el){
+  el.classList.toggle("on");
+  showToast(el.classList.contains("on")?"Setting enabled":"Setting disabled");
+}
+
+
+const API_BASE = "";
+
+function showAuthPane(which){
+  document.querySelectorAll('.auth-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.auth-pane').forEach(p=>p.classList.remove('active'));
+  if(which==='login'){
+    document.getElementById('loginTab').classList.add('active');
+    document.getElementById('auth-login').classList.add('active');
+  }else{
+    document.getElementById('signupTab').classList.add('active');
+    document.getElementById('auth-signup').classList.add('active');
+  }
+}
+
+function showPublic(){
+  document.getElementById('publicShell').style.display='flex';
+  document.getElementById('mainApp').style.display='none';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function showApp(user){
+  document.getElementById('publicShell').style.display='none';
+  document.getElementById('mainApp').style.display='flex';
+  if(user && user.full_name){
+    document.querySelector('.profile-mini strong').textContent=user.full_name;
+    document.querySelector('.brand span').textContent='Placement readiness platform';
+  }
+  openView('dashboard');
+}
+
+async function loginUser(event){
+  event.preventDefault();
+  const error=document.getElementById('loginError');
+  error.style.display='none';
+  try{
+    const response=await fetch('/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify({email:document.getElementById('loginEmail').value,password:document.getElementById('loginPassword').value})});
+    const data=await response.json();
+    if(!response.ok){ throw new Error(data.message||'Login failed'); }
+    showToast('Login successful');
+    showApp(data.user);
+  }catch(err){
+    error.textContent=err.message;
+    error.style.display='block';
+  }
+}
+
+async function registerUser(event){
+  event.preventDefault();
+  const error=document.getElementById('signupError');
+  const success=document.getElementById('signupSuccess');
+  error.style.display='none'; success.style.display='none';
+  try{
+    const response=await fetch('/api/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify({full_name:document.getElementById('signupName').value,email:document.getElementById('signupEmail').value,password:document.getElementById('signupPassword').value})});
+    const data=await response.json();
+    if(!response.ok){ throw new Error(data.message||'Registration failed'); }
+    success.textContent='Account created. Opening your PlacePilot dashboard...';
+    success.style.display='block';
+    setTimeout(()=>showApp(data.user),500);
+  }catch(err){
+    error.textContent=err.message;
+    error.style.display='block';
+  }
+}
+
+async function logoutUser(){
+  try{
+    await fetch('/api/auth/logout',{method:'POST',credentials:'include'});
+  }catch(e){}
+  showPublic();
+  showToast('Logged out');
+}
+
+async function checkExistingSession(){
+  try{
+    const response=await fetch('/api/auth/me',{credentials:'include'});
+    if(response.ok){
+      const data=await response.json();
+      showApp(data.user);
+      return;
+    }
+  }catch(e){}
+
+  // Hackathon demo: open the dashboard directly for a fresh visitor.
+  // Login/Create Account remains available after clicking Logout.
+  showApp({
+    full_name:'Demo Student',
+    email:'demo@placepilot.com'
+  });
+}
+
+checkExistingSession();
+
+const saved=localStorage.getItem("placepilotAssessment");
+if(saved){
+  try{state.assessmentComplete=true;}catch(e){}
+}
+</script>
+</body>
+</html>
